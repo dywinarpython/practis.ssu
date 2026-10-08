@@ -3,7 +3,6 @@ package org.ssu.repository;
 import org.ssu.entity.ResponsiblePerson;
 import org.ssu.projection.MaterialValueProjection;
 import org.ssu.projection.ResponsiblePersonProjection;
-import org.ssu.projection.ValueTransferProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,7 +19,8 @@ public interface ResponsiblePersonRepository extends JpaRepository<ResponsiblePe
                 last_name AS lastName,
                 first_name AS firstName,
                 position AS position,
-                phone AS phone
+                phone AS phone, 
+                status as status
             FROM responsible_persons
             ORDER BY responsible_person_id
             """, nativeQuery = true)
@@ -32,21 +32,22 @@ public interface ResponsiblePersonRepository extends JpaRepository<ResponsiblePe
                 last_name AS lastName,
                 first_name AS firstName,
                 position AS position,
-                phone AS phone
+                phone AS phone, 
+                status as status
             FROM responsible_persons
             WHERE responsible_person_id = :id
             """, nativeQuery = true)
     Optional<ResponsiblePersonProjection> findResponsiblePersonById(@Param("id") Integer id);
 
     @Query(value = """
-            INSERT INTO responsible_persons(last_name, first_name, position, phone)
-            VALUES (:lastName, :firstName, :position, :phone)
+            INSERT INTO responsible_persons(last_name, first_name, position, phone, status)
+            VALUES (:lastName, :firstName, :position, :phone, :status)
             RETURNING responsible_person_id
             """, nativeQuery = true)
     Integer insertResponsiblePerson(@Param("lastName") String lastName,
                                      @Param("firstName") String firstName,
                                      @Param("position") String position,
-                                     @Param("phone") String phone);
+                                     @Param("phone") String phone, @Param("status") String status);
 
     @Modifying
     @Query(value = """
@@ -65,14 +66,15 @@ public interface ResponsiblePersonRepository extends JpaRepository<ResponsiblePe
 
     @Modifying
     @Query(value = """
-            DELETE FROM responsible_persons
+            UPDATE  responsible_persons
+            SET status = 'DELETED'            
             WHERE responsible_person_id = :id
             """, nativeQuery = true)
     int deleteResponsiblePerson(@Param("id") Integer id);
 
     @Query(value = """
             SELECT EXISTS(
-                SELECT 1 FROM responsible_persons WHERE responsible_person_id = :id
+                SELECT 1 FROM responsible_persons WHERE responsible_person_id = :id and status <> 'DELETED'
             )
             """, nativeQuery = true)
     boolean existsResponsiblePerson(@Param("id") Integer id);
@@ -103,6 +105,7 @@ public interface ResponsiblePersonRepository extends JpaRepository<ResponsiblePe
                 material_value_id AS id,
                 name AS name,
                 category AS category,
+                status AS status,            
                 cost AS cost,
                 condition AS condition,
                 responsible_person_id AS responsiblePersonId
@@ -112,29 +115,4 @@ public interface ResponsiblePersonRepository extends JpaRepository<ResponsiblePe
             """, nativeQuery = true)
     List<MaterialValueProjection> findMaterialValuesByResponsiblePersonId(@Param("id") Integer id);
 
-    @Query(value = """
-            SELECT
-                transfer_id AS id,
-                from_responsible_person_id AS fromResponsiblePersonId,
-                to_responsible_person_id AS toResponsiblePersonId,
-                material_value_id AS materialValueId,
-                date AS date
-            FROM value_transfers
-            WHERE from_responsible_person_id = :id
-            ORDER BY transfer_id
-            """, nativeQuery = true)
-    List<ValueTransferProjection> findTransfersGivenByResponsiblePersonId(@Param("id") Integer id);
-
-    @Query(value = """
-            SELECT
-                transfer_id AS id,
-                from_responsible_person_id AS fromResponsiblePersonId,
-                to_responsible_person_id AS toResponsiblePersonId,
-                material_value_id AS materialValueId,
-                date AS date
-            FROM value_transfers
-            WHERE to_responsible_person_id = :id
-            ORDER BY transfer_id
-            """, nativeQuery = true)
-    List<ValueTransferProjection> findTransfersReceivedByResponsiblePersonId(@Param("id") Integer id);
 }

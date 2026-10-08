@@ -3,9 +3,12 @@ package org.ssu.service.impl;
 import org.ssu.dto.request.WarehouseCreateRequest;
 import org.ssu.dto.request.WarehousePatchRequest;
 import org.ssu.dto.request.WarehouseUpdateRequest;
+import org.ssu.dto.response.MaterialValueResponse;
 import org.ssu.dto.response.WarehouseResponse;
+import org.ssu.enums.EntityStatus;
 import org.ssu.exception.ConflictException;
 import org.ssu.exception.ResourceNotFoundException;
+import org.ssu.mapper.MaterialValueMapper;
 import org.ssu.mapper.WarehouseMapper;
 import org.ssu.projection.WarehouseProjection;
 import org.ssu.repository.WarehouseRepository;
@@ -22,6 +25,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
     private final WarehouseMapper warehouseMapper;
+    private final MaterialValueMapper materialValueMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -40,9 +44,15 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<MaterialValueResponse> getMaterialValueByWarehouseId(Integer warehouseId) {
+        return warehouseRepository.findMaterialValueById(warehouseId).stream().map(materialValueMapper::toResponse).toList();
+    }
+
+    @Override
     @Transactional
     public WarehouseResponse create(WarehouseCreateRequest request) {
-        Integer id = warehouseRepository.insertWarehouse(request.getName(), request.getAddress());
+        Integer id = warehouseRepository.insertWarehouse(request.getName(), request.getAddress(), EntityStatus.ACTIVE.toString());
         return getById(id);
     }
 

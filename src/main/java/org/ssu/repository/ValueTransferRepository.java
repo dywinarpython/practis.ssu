@@ -49,21 +49,6 @@ public interface ValueTransferRepository extends JpaRepository<ValueTransfer, In
 
     @Modifying
     @Query(value = """
-            UPDATE value_transfers
-            SET from_responsible_person_id = :fromId,
-                to_responsible_person_id = :toId,
-                material_value_id = :materialValueId,
-                date = :date
-            WHERE transfer_id = :id
-            """, nativeQuery = true)
-    int updateValueTransfer(@Param("id") Integer id,
-                             @Param("fromId") Integer fromId,
-                             @Param("toId") Integer toId,
-                             @Param("materialValueId") Integer materialValueId,
-                             @Param("date") LocalDateTime date);
-
-    @Modifying
-    @Query(value = """
             DELETE FROM value_transfers
             WHERE transfer_id = :id
             """, nativeQuery = true)

@@ -1,5 +1,6 @@
 package org.ssu.controller;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.ssu.annotation.ApiV1Controller;
 import org.ssu.dto.request.MaterialValueCreateRequest;
 import org.ssu.dto.request.MaterialValuePatchRequest;
@@ -40,7 +41,8 @@ public class MaterialValueController {
     @GetMapping("/material-values")
     @Operation(operationId = "getMaterialValues", summary = "Get all material values")
     @ApiResponse(responseCode = "200", description = "List of material values",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = MaterialValueResponse.class)))
+            content = @Content(mediaType = "application/json", array = @ArraySchema(
+                    schema = @Schema(implementation = MaterialValueResponse.class))))
     public ResponseEntity<List<MaterialValueResponse>> getMaterialValues() {
         return ResponseEntity.ok(materialValueService.getAll());
     }
@@ -125,7 +127,8 @@ public class MaterialValueController {
     @Operation(operationId = "getMaterialValueMovements", summary = "Get movements for a material value")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of movements",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = MovementResponse.class))),
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(
+                            schema = @Schema(implementation = MovementResponse.class)))),
             @ApiResponse(responseCode = "404", description = "Material value not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
@@ -138,7 +141,8 @@ public class MaterialValueController {
     @Operation(operationId = "getMaterialValueTransfers", summary = "Get transfers for a material value")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of value transfers",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ValueTransferResponse.class))),
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(
+                            schema = @Schema(implementation = ValueTransferResponse.class)))),
             @ApiResponse(responseCode = "404", description = "Material value not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })

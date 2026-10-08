@@ -39,4 +39,7 @@ public class MaterialValueCreateRequest {
 
     @Schema(description = "Responsible person id (optional)", example = "1")
     private Integer responsiblePersonId;
+
+    @Schema(description = "Id склада", example = "1")
+    private Integer warehouseId;
 }

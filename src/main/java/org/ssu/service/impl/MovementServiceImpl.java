@@ -60,52 +60,6 @@ public class MovementServiceImpl implements MovementService {
         return getById(id);
     }
 
-    @Override
-    @Transactional
-    public MovementResponse update(Integer id, MovementUpdateRequest request) {
-        if (!movementRepository.existsMovement(id)) {
-            throw new ResourceNotFoundException("Movement with id " + id + " not found");
-        }
-        validateWarehouseExists(request.getWarehouseId());
-        validateMaterialValueExists(request.getMaterialValueId());
-
-        movementRepository.updateMovement(
-                id, request.getWarehouseId(), request.getMovementType().name(),
-                request.getStatus().name(), request.getDate(), request.getMaterialValueId());
-        return getById(id);
-    }
-
-    @Override
-    @Transactional
-    public MovementResponse patch(Integer id, MovementPatchRequest request) {
-        MovementProjection existing = movementRepository.findMovementById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movement with id " + id + " not found"));
-
-        Integer warehouseId = request.getWarehouseId() != null ? request.getWarehouseId() : existing.getWarehouseId();
-        MovementType movementType = request.getMovementType() != null
-                ? request.getMovementType() : MovementType.valueOf(existing.getMovementType());
-        MovementStatus status = request.getStatus() != null
-                ? request.getStatus() : MovementStatus.valueOf(existing.getStatus());
-        LocalDateTime date = request.getDate() != null ? request.getDate() : existing.getDate();
-        Integer materialValueId = request.getMaterialValueId() != null
-                ? request.getMaterialValueId() : existing.getMaterialValueId();
-
-        validateWarehouseExists(warehouseId);
-        validateMaterialValueExists(materialValueId);
-
-        movementRepository.updateMovement(id, warehouseId, movementType.name(), status.name(), date, materialValueId);
-        return getById(id);
-    }
-
-    @Override
-    @Transactional
-    public void delete(Integer id) {
-        if (!movementRepository.existsMovement(id)) {
-            throw new ResourceNotFoundException("Movement with id " + id + " not found");
-        }
-        movementRepository.deleteMovement(id);
-    }
-
     private void validateWarehouseExists(Integer warehouseId) {
         if (!warehouseRepository.existsWarehouse(warehouseId)) {
             throw new ResourceNotFoundException("Warehouse with id " + warehouseId + " not found");

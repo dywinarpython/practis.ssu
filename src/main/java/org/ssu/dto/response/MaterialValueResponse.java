@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.ssu.enums.EntityStatus;
 
 import java.math.BigDecimal;
 
@@ -26,6 +27,9 @@ public class MaterialValueResponse {
     @Schema(description = "Category", example = "Equipment")
     private String category;
 
+    @Schema(description = "Status", example = "ACTIVE")
+    private EntityStatus status;
+
     @Schema(description = "Cost", example = "120000.00")
     private BigDecimal cost;
 
@@ -34,4 +38,7 @@ public class MaterialValueResponse {
 
     @Schema(description = "Responsible person id", example = "1")
     private Integer responsiblePersonId;
+
+    @Schema(description = "Warehouse Id", example = "1")
+    private Integer warehouseId;
 }

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.ssu.enums.EntityStatus;
 
 @Getter
 @Setter
@@ -23,4 +24,7 @@ public class WarehouseResponse {
 
     @Schema(description = "Warehouse address", example = "Rostov-on-Don, Industrialnaya 10")
     private String address;
+
+    @Schema(description = "Status", example = "ACTIVE")
+    private EntityStatus status;
 }

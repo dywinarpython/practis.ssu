@@ -25,7 +25,4 @@ public interface ResponsiblePersonService {
 
     List<MaterialValueResponse> getMaterialValues(Integer id);
 
-    List<ValueTransferResponse> getTransfersGiven(Integer id);
-
-    List<ValueTransferResponse> getTransfersReceived(Integer id);
 }

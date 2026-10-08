@@ -36,7 +36,4 @@ public class MaterialValueUpdateRequest {
     @NotBlank
     @Schema(description = "Condition", example = "NEW", requiredMode = Schema.RequiredMode.REQUIRED)
     private String condition;
-
-    @Schema(description = "Responsible person id (optional)", example = "1")
-    private Integer responsiblePersonId;
 }

@@ -1,9 +1,11 @@
 package org.ssu.controller;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.ssu.annotation.ApiV1Controller;
 import org.ssu.dto.request.WarehouseCreateRequest;
 import org.ssu.dto.request.WarehousePatchRequest;
 import org.ssu.dto.request.WarehouseUpdateRequest;
+import org.ssu.dto.response.MaterialValueResponse;
 import org.ssu.dto.response.WarehouseResponse;
 import org.ssu.exception.ApiErrorResponse;
 import org.ssu.service.WarehouseService;
@@ -39,7 +41,8 @@ public class WarehouseController {
     @GetMapping("/warehouses")
     @Operation(operationId = "getWarehouses", summary = "Get all warehouses")
     @ApiResponse(responseCode = "200", description = "List of warehouses",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = WarehouseResponse.class)))
+            content = @Content(mediaType = "application/json", array = @ArraySchema(
+                    schema = @Schema(implementation = WarehouseResponse.class))))
     public ResponseEntity<List<WarehouseResponse>> getWarehouses() {
         return ResponseEntity.ok(warehouseService.getAll());
     }
@@ -55,6 +58,20 @@ public class WarehouseController {
     public ResponseEntity<WarehouseResponse> getWarehouseById(
             @Parameter(description = "Warehouse id", example = "1", required = true) @PathVariable Integer id) {
         return ResponseEntity.ok(warehouseService.getById(id));
+    }
+
+    @GetMapping("/warehouses/{id}/material-values")
+    @Operation(operationId = "getMaterialValueByWarehouseId", summary = "Get material values by id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Material Values are found",
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(
+                            schema = @Schema(implementation = WarehouseResponse.class)))),
+            @ApiResponse(responseCode = "404", description = "Warehouse not found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    public ResponseEntity<List<MaterialValueResponse>> getMaterialValueByWarehouseId(
+            @Parameter(description = "Warehouse id", example = "1", required = true) @PathVariable Integer id) {
+        return ResponseEntity.ok(warehouseService.getMaterialValueByWarehouseId(id));
     }
 
     @PostMapping("/warehouses")
