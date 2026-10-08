@@ -1,6 +1,7 @@
 package org.ssu.repository;
 
 import org.ssu.entity.Warehouse;
+import org.ssu.projection.MaterialValueProjection;
 import org.ssu.projection.WarehouseProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -16,7 +17,8 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Integer> {
             SELECT
                 warehouse_id AS id,
                 name AS name,
-                address AS address
+                address AS address, 
+                status as status
             FROM warehouses
             ORDER BY warehouse_id
             """, nativeQuery = true)
@@ -26,18 +28,33 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Integer> {
             SELECT
                 warehouse_id AS id,
                 name AS name,
-                address AS address
+                address AS address,
+                status as status
             FROM warehouses
             WHERE warehouse_id = :id
             """, nativeQuery = true)
     Optional<WarehouseProjection> findWarehouseById(@Param("id") Integer id);
 
     @Query(value = """
-            INSERT INTO warehouses(name, address)
-            VALUES (:name, :address)
+            SELECT
+                material_value_id AS id,
+                name AS name,
+                category AS category,
+                status as status,
+                cost AS cost,
+                condition AS condition,
+                responsible_person_id AS responsiblePersonId
+            FROM material_values
+            WHERE warehouse_id = :id
+            """, nativeQuery = true)
+    List<MaterialValueProjection> findMaterialValueById(@Param("id") Integer id);
+
+    @Query(value = """
+            INSERT INTO warehouses(name, address, status)
+            VALUES (:name, :address, :status)
             RETURNING warehouse_id
             """, nativeQuery = true)
-    Integer insertWarehouse(@Param("name") String name, @Param("address") String address);
+    Integer insertWarehouse(@Param("name") String name, @Param("address") String address, @Param("status") String status);
 
     @Modifying
     @Query(value = """
@@ -50,21 +67,22 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Integer> {
 
     @Modifying
     @Query(value = """
-            DELETE FROM warehouses
+            UPDATE  warehouses
+            SET  status = 'DELETED'
             WHERE warehouse_id = :id
             """, nativeQuery = true)
     int deleteWarehouse(@Param("id") Integer id);
 
     @Query(value = """
             SELECT EXISTS(
-                SELECT 1 FROM warehouses WHERE warehouse_id = :id
+                SELECT 1 FROM warehouses WHERE warehouse_id = :id and status <> 'DELETED'
             )
             """, nativeQuery = true)
     boolean existsWarehouse(@Param("id") Integer id);
 
     @Query(value = """
             SELECT EXISTS(
-                SELECT 1 FROM movements WHERE warehouse_id = :warehouseId
+                SELECT 1 FROM material_values WHERE warehouse_id = :warehouseId
             )
             """, nativeQuery = true)
     boolean existsMovementsByWarehouseId(@Param("warehouseId") Integer warehouseId);

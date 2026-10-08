@@ -1,5 +1,6 @@
 package org.ssu.handler;
 
+import lombok.extern.slf4j.Slf4j;
 import org.ssu.exception.ApiErrorResponse;
 import org.ssu.exception.ApiFieldError;
 import org.ssu.exception.BadRequestException;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -59,6 +61,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
+        log.error(ex.getMessage(), ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Unexpected internal server error", request.getRequestURI(), null);
     }

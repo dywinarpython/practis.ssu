@@ -1,16 +1,12 @@
 package org.ssu.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.ssu.enums.EntityStatus;
 
 import java.math.BigDecimal;
 
@@ -34,12 +30,19 @@ public class MaterialValue {
     @Column(name = "category", nullable = false)
     private String category;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private EntityStatus status;
+
     @Column(name = "cost", nullable = false)
     private BigDecimal cost;
 
     @Column(name = "condition", nullable = false)
     private String condition;
 
-    @Column(name = "responsible_person_id")
+    @Column(name = "responsible_person_id", nullable = false)
     private Integer responsiblePersonId;
+
+    @Column(name = "warehouse_id", nullable = false)
+    private Integer warehouseId;
 }

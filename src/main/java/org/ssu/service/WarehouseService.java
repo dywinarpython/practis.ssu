@@ -3,6 +3,7 @@ package org.ssu.service;
 import org.ssu.dto.request.WarehouseCreateRequest;
 import org.ssu.dto.request.WarehousePatchRequest;
 import org.ssu.dto.request.WarehouseUpdateRequest;
+import org.ssu.dto.response.MaterialValueResponse;
 import org.ssu.dto.response.WarehouseResponse;
 
 import java.util.List;
@@ -12,6 +13,8 @@ public interface WarehouseService {
     List<WarehouseResponse> getAll();
 
     WarehouseResponse getById(Integer id);
+
+    List<MaterialValueResponse> getMaterialValueByWarehouseId(Integer warehouseId);
 
     WarehouseResponse create(WarehouseCreateRequest request);
 

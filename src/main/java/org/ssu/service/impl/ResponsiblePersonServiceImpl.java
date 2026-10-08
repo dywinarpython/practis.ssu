@@ -6,6 +6,7 @@ import org.ssu.dto.request.ResponsiblePersonUpdateRequest;
 import org.ssu.dto.response.MaterialValueResponse;
 import org.ssu.dto.response.ResponsiblePersonResponse;
 import org.ssu.dto.response.ValueTransferResponse;
+import org.ssu.enums.EntityStatus;
 import org.ssu.exception.ConflictException;
 import org.ssu.exception.ResourceNotFoundException;
 import org.ssu.mapper.MaterialValueMapper;
@@ -27,7 +28,6 @@ public class ResponsiblePersonServiceImpl implements ResponsiblePersonService {
     private final ResponsiblePersonRepository responsiblePersonRepository;
     private final ResponsiblePersonMapper responsiblePersonMapper;
     private final MaterialValueMapper materialValueMapper;
-    private final ValueTransferMapper valueTransferMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -49,7 +49,7 @@ public class ResponsiblePersonServiceImpl implements ResponsiblePersonService {
     @Transactional
     public ResponsiblePersonResponse create(ResponsiblePersonCreateRequest request) {
         Integer id = responsiblePersonRepository.insertResponsiblePerson(
-                request.getLastName(), request.getFirstName(), request.getPosition(), request.getPhone());
+                request.getLastName(), request.getFirstName(), request.getPosition(), request.getPhone(), EntityStatus.ACTIVE.toString());
         return getById(id);
     }
 
@@ -88,12 +88,6 @@ public class ResponsiblePersonServiceImpl implements ResponsiblePersonService {
         if (responsiblePersonRepository.existsMaterialValuesByResponsiblePersonId(id)) {
             throw new ConflictException("Responsible person cannot be deleted because material values are assigned");
         }
-        if (responsiblePersonRepository.existsTransfersFromResponsiblePersonId(id)) {
-            throw new ConflictException("Responsible person cannot be deleted because they appear as a transfer sender");
-        }
-        if (responsiblePersonRepository.existsTransfersToResponsiblePersonId(id)) {
-            throw new ConflictException("Responsible person cannot be deleted because they appear as a transfer recipient");
-        }
         responsiblePersonRepository.deleteResponsiblePerson(id);
     }
 
@@ -105,28 +99,6 @@ public class ResponsiblePersonServiceImpl implements ResponsiblePersonService {
         }
         return responsiblePersonRepository.findMaterialValuesByResponsiblePersonId(id).stream()
                 .map(materialValueMapper::toResponse)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ValueTransferResponse> getTransfersGiven(Integer id) {
-        if (!responsiblePersonRepository.existsResponsiblePerson(id)) {
-            throw new ResourceNotFoundException("Responsible person with id " + id + " not found");
-        }
-        return responsiblePersonRepository.findTransfersGivenByResponsiblePersonId(id).stream()
-                .map(valueTransferMapper::toResponse)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ValueTransferResponse> getTransfersReceived(Integer id) {
-        if (!responsiblePersonRepository.existsResponsiblePerson(id)) {
-            throw new ResourceNotFoundException("Responsible person with id " + id + " not found");
-        }
-        return responsiblePersonRepository.findTransfersReceivedByResponsiblePersonId(id).stream()
-                .map(valueTransferMapper::toResponse)
                 .toList();
     }
 }

@@ -32,12 +32,9 @@ public class MaterialValuePatchRequest {
     @Schema(description = "Condition", example = "USED")
     private String condition;
 
-    @Schema(description = "Responsible person id", example = "2")
-    private Integer responsiblePersonId;
-
     @AssertTrue(message = "At least one field must be provided")
     @Schema(hidden = true)
     public boolean isAnyFieldProvided() {
-        return name != null || category != null || cost != null || condition != null || responsiblePersonId != null;
+        return name != null || category != null || cost != null || condition != null;
     }
 }

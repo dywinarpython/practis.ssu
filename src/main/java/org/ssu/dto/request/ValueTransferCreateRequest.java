@@ -29,7 +29,6 @@ public class ValueTransferCreateRequest {
     @Schema(description = "Material value id", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer materialValueId;
 
-    @NotNull
     @Schema(description = "Transfer date and time", example = "2026-09-23T17:00:00", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime date;
 

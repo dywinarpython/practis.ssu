@@ -47,63 +47,13 @@ public class ValueTransferServiceImpl implements ValueTransferService {
     @Override
     @Transactional
     public ValueTransferResponse create(ValueTransferCreateRequest request) {
-        validateFromToDifferent(request.getFromResponsiblePersonId(), request.getToResponsiblePersonId());
         validateResponsiblePersonExists(request.getFromResponsiblePersonId());
         validateResponsiblePersonExists(request.getToResponsiblePersonId());
-        validateMaterialValueExists(request.getMaterialValueId());
+        validateMaterialValueExists(request.getMaterialValueId(), request.getFromResponsiblePersonId());
         Integer id = valueTransferRepository.insertValueTransfer(
                 request.getFromResponsiblePersonId(), request.getToResponsiblePersonId(),
-                request.getMaterialValueId(), request.getDate());
+                request.getMaterialValueId(), request.getDate() == null ? LocalDateTime.now() : request.getDate());
         return getById(id);
-    }
-
-    @Override
-    @Transactional
-    public ValueTransferResponse update(Integer id, ValueTransferUpdateRequest request) {
-        if (!valueTransferRepository.existsValueTransfer(id)) {
-            throw new ResourceNotFoundException("Value transfer with id " + id + " not found");
-        }
-        validateFromToDifferent(request.getFromResponsiblePersonId(), request.getToResponsiblePersonId());
-        validateResponsiblePersonExists(request.getFromResponsiblePersonId());
-        validateResponsiblePersonExists(request.getToResponsiblePersonId());
-        validateMaterialValueExists(request.getMaterialValueId());
-
-        valueTransferRepository.updateValueTransfer(
-                id, request.getFromResponsiblePersonId(), request.getToResponsiblePersonId(),
-                request.getMaterialValueId(), request.getDate());
-        return getById(id);
-    }
-
-    @Override
-    @Transactional
-    public ValueTransferResponse patch(Integer id, ValueTransferPatchRequest request) {
-        ValueTransferProjection existing = valueTransferRepository.findValueTransferById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Value transfer with id " + id + " not found"));
-
-        Integer fromId = request.getFromResponsiblePersonId() != null
-                ? request.getFromResponsiblePersonId() : existing.getFromResponsiblePersonId();
-        Integer toId = request.getToResponsiblePersonId() != null
-                ? request.getToResponsiblePersonId() : existing.getToResponsiblePersonId();
-        Integer materialValueId = request.getMaterialValueId() != null
-                ? request.getMaterialValueId() : existing.getMaterialValueId();
-        LocalDateTime date = request.getDate() != null ? request.getDate() : existing.getDate();
-
-        validateResponsiblePersonExists(fromId);
-        validateResponsiblePersonExists(toId);
-        validateMaterialValueExists(materialValueId);
-        validateFromToDifferent(fromId, toId);
-
-        valueTransferRepository.updateValueTransfer(id, fromId, toId, materialValueId, date);
-        return getById(id);
-    }
-
-    @Override
-    @Transactional
-    public void delete(Integer id) {
-        if (!valueTransferRepository.existsValueTransfer(id)) {
-            throw new ResourceNotFoundException("Value transfer with id " + id + " not found");
-        }
-        valueTransferRepository.deleteValueTransfer(id);
     }
 
     private void validateResponsiblePersonExists(Integer responsiblePersonId) {
@@ -112,15 +62,12 @@ public class ValueTransferServiceImpl implements ValueTransferService {
         }
     }
 
-    private void validateMaterialValueExists(Integer materialValueId) {
-        if (!materialValueRepository.existsMaterialValue(materialValueId)) {
+    private void validateMaterialValueExists(Integer materialValueId, Integer responsiblePersonId) {
+        if (!materialValueRepository.existsMaterialValueAndResponsiblePersonId(materialValueId, responsiblePersonId)) {
+            if(materialValueRepository.existsMaterialValue(materialValueId)) {
+                throw new ResourceNotFoundException("ResponsiblePerson with id: " + responsiblePersonId + " not owner material value with id " + materialValueId);
+            }
             throw new ResourceNotFoundException("Material value with id " + materialValueId + " not found");
-        }
-    }
-
-    private void validateFromToDifferent(Integer fromId, Integer toId) {
-        if (fromId != null && fromId.equals(toId)) {
-            throw new BadRequestException("fromResponsiblePersonId and toResponsiblePersonId must not be the same");
         }
     }
 }

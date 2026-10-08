@@ -20,9 +20,11 @@ public interface MaterialValueRepository extends JpaRepository<MaterialValue, In
                 material_value_id AS id,
                 name AS name,
                 category AS category,
+                status as status,            
                 cost AS cost,
                 condition AS condition,
-                responsible_person_id AS responsiblePersonId
+                responsible_person_id AS responsiblePersonId, 
+                warehouse_id as warehouseId            
             FROM material_values
             ORDER BY material_value_id
             """, nativeQuery = true)
@@ -33,22 +35,25 @@ public interface MaterialValueRepository extends JpaRepository<MaterialValue, In
                 material_value_id AS id,
                 name AS name,
                 category AS category,
+                status as status,
                 cost AS cost,
                 condition AS condition,
-                responsible_person_id AS responsiblePersonId
+                responsible_person_id AS responsiblePersonId, 
+                warehouse_id as warehouseId
             FROM material_values
             WHERE material_value_id = :id
             """, nativeQuery = true)
     Optional<MaterialValueProjection> findMaterialValueById(@Param("id") Integer id);
 
     @Query(value = """
-            INSERT INTO material_values(name, category, cost, condition, responsible_person_id)
-            VALUES (:name, :category, :cost, :condition, :responsiblePersonId)
+            INSERT INTO material_values(name, category, cost, status, condition, responsible_person_id)
+            VALUES (:name, :category, :cost, :status, :condition, :responsiblePersonId)
             RETURNING material_value_id
             """, nativeQuery = true)
     Integer insertMaterialValue(@Param("name") String name,
                                  @Param("category") String category,
                                  @Param("cost") BigDecimal cost,
+                                 @Param("status") String status,
                                  @Param("condition") String condition,
                                  @Param("responsiblePersonId") Integer responsiblePersonId);
 
@@ -58,44 +63,39 @@ public interface MaterialValueRepository extends JpaRepository<MaterialValue, In
             SET name = :name,
                 category = :category,
                 cost = :cost,
-                condition = :condition,
-                responsible_person_id = :responsiblePersonId
+                condition = :condition
             WHERE material_value_id = :id
             """, nativeQuery = true)
     int updateMaterialValue(@Param("id") Integer id,
                              @Param("name") String name,
                              @Param("category") String category,
                              @Param("cost") BigDecimal cost,
-                             @Param("condition") String condition,
-                             @Param("responsiblePersonId") Integer responsiblePersonId);
+                             @Param("condition") String condition);
 
     @Modifying
     @Query(value = """
-            DELETE FROM material_values
+            UPDATE material_values           
+            SET status = 'DELETED'
             WHERE material_value_id = :id
             """, nativeQuery = true)
     int deleteMaterialValue(@Param("id") Integer id);
 
     @Query(value = """
             SELECT EXISTS(
-                SELECT 1 FROM material_values WHERE material_value_id = :id
+                SELECT 1 FROM material_values WHERE material_value_id = :id and status <> 'DELETED'
             )
             """, nativeQuery = true)
     boolean existsMaterialValue(@Param("id") Integer id);
 
     @Query(value = """
             SELECT EXISTS(
-                SELECT 1 FROM movements WHERE material_value_id = :id
+                SELECT 1 FROM material_values WHERE material_value_id = :id 
+                         and status <> 'DELETED' 
+                         and responsible_person_id = :responsiblePersonId
             )
             """, nativeQuery = true)
-    boolean existsMovementsByMaterialValueId(@Param("id") Integer id);
+    boolean existsMaterialValueAndResponsiblePersonId(@Param("id") Integer id, @Param("responsiblePersonId") Integer responsiblePersonId);
 
-    @Query(value = """
-            SELECT EXISTS(
-                SELECT 1 FROM value_transfers WHERE material_value_id = :id
-            )
-            """, nativeQuery = true)
-    boolean existsTransfersByMaterialValueId(@Param("id") Integer id);
 
     @Query(value = """
             SELECT

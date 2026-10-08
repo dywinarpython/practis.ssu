@@ -14,10 +14,4 @@ public interface MovementService {
     MovementResponse getById(Integer id);
 
     MovementResponse create(MovementCreateRequest request);
-
-    MovementResponse update(Integer id, MovementUpdateRequest request);
-
-    MovementResponse patch(Integer id, MovementPatchRequest request);
-
-    void delete(Integer id);
 }

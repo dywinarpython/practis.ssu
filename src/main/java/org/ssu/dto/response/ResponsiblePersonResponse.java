@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.ssu.enums.EntityStatus;
 
 @Getter
 @Setter
@@ -29,4 +30,7 @@ public class ResponsiblePersonResponse {
 
     @Schema(description = "Phone number", example = "+7-900-123-45-67")
     private String phone;
+
+    @Schema(description = "Status", example = "ACTIVE")
+    private EntityStatus status;
 }

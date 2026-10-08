@@ -1,5 +1,6 @@
 package org.ssu.controller;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import org.ssu.annotation.ApiV1Controller;
 import org.ssu.dto.request.ResponsiblePersonCreateRequest;
 import org.ssu.dto.request.ResponsiblePersonPatchRequest;
@@ -40,7 +41,8 @@ public class ResponsiblePersonController {
     @GetMapping("/responsible-persons")
     @Operation(operationId = "getResponsiblePersons", summary = "Get all responsible persons")
     @ApiResponse(responseCode = "200", description = "List of responsible persons",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponsiblePersonResponse.class)))
+            content = @Content(mediaType = "application/json", array = @ArraySchema(
+                    schema = @Schema(implementation = ResponsiblePersonResponse.class))))
     public ResponseEntity<List<ResponsiblePersonResponse>> getResponsiblePersons() {
         return ResponseEntity.ok(responsiblePersonService.getAll());
     }
@@ -123,38 +125,13 @@ public class ResponsiblePersonController {
     @Operation(operationId = "getResponsiblePersonMaterialValues", summary = "Get material values assigned to a responsible person")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of material values",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = MaterialValueResponse.class))),
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(
+                            schema = @Schema(implementation = MaterialValueResponse.class)))),
             @ApiResponse(responseCode = "404", description = "Responsible person not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     public ResponseEntity<List<MaterialValueResponse>> getResponsiblePersonMaterialValues(
             @Parameter(description = "Responsible person id", example = "1", required = true) @PathVariable Integer id) {
         return ResponseEntity.ok(responsiblePersonService.getMaterialValues(id));
-    }
-
-    @GetMapping("/responsible-persons/{id}/transfers/given")
-    @Operation(operationId = "getResponsiblePersonTransfersGiven", summary = "Get transfers given by a responsible person")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "List of value transfers",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ValueTransferResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Responsible person not found",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
-    })
-    public ResponseEntity<List<ValueTransferResponse>> getResponsiblePersonTransfersGiven(
-            @Parameter(description = "Responsible person id", example = "1", required = true) @PathVariable Integer id) {
-        return ResponseEntity.ok(responsiblePersonService.getTransfersGiven(id));
-    }
-
-    @GetMapping("/responsible-persons/{id}/transfers/received")
-    @Operation(operationId = "getResponsiblePersonTransfersReceived", summary = "Get transfers received by a responsible person")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "List of value transfers",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ValueTransferResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Responsible person not found",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
-    })
-    public ResponseEntity<List<ValueTransferResponse>> getResponsiblePersonTransfersReceived(
-            @Parameter(description = "Responsible person id", example = "1", required = true) @PathVariable Integer id) {
-        return ResponseEntity.ok(responsiblePersonService.getTransfersReceived(id));
     }
 }

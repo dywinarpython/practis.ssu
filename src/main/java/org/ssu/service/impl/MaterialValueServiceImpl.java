@@ -6,20 +6,22 @@ import org.ssu.dto.request.MaterialValueUpdateRequest;
 import org.ssu.dto.response.MaterialValueResponse;
 import org.ssu.dto.response.MovementResponse;
 import org.ssu.dto.response.ValueTransferResponse;
-import org.ssu.exception.ConflictException;
+import org.ssu.enums.EntityStatus;
+import org.ssu.enums.MovementStatus;
+import org.ssu.enums.MovementType;
 import org.ssu.exception.ResourceNotFoundException;
 import org.ssu.mapper.MaterialValueMapper;
 import org.ssu.mapper.MovementMapper;
 import org.ssu.mapper.ValueTransferMapper;
 import org.ssu.projection.MaterialValueProjection;
-import org.ssu.repository.MaterialValueRepository;
-import org.ssu.repository.ResponsiblePersonRepository;
+import org.ssu.repository.*;
 import org.ssu.service.MaterialValueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,6 +30,9 @@ public class MaterialValueServiceImpl implements MaterialValueService {
 
     private final MaterialValueRepository materialValueRepository;
     private final ResponsiblePersonRepository responsiblePersonRepository;
+    private final MovementRepository movementRepository;
+    private final WarehouseRepository warehouseRepository;
+    private final ValueTransferRepository valueTransferRepository;
     private final MaterialValueMapper materialValueMapper;
     private final MovementMapper movementMapper;
     private final ValueTransferMapper valueTransferMapper;
@@ -52,9 +57,15 @@ public class MaterialValueServiceImpl implements MaterialValueService {
     @Transactional
     public MaterialValueResponse create(MaterialValueCreateRequest request) {
         validateResponsiblePersonExists(request.getResponsiblePersonId());
+        validateResponsibleWarehouseExists(request.getWarehouseId());
+
         Integer id = materialValueRepository.insertMaterialValue(
-                request.getName(), request.getCategory(), request.getCost(),
+                request.getName(), request.getCategory(), request.getCost(), EntityStatus.ACTIVE.toString(),
                 request.getCondition(), request.getResponsiblePersonId());
+
+        movementRepository.insertMovement(request.getWarehouseId(),
+                MovementType.INCOMING.toString(), MovementStatus.COMPLETED.toString(), LocalDateTime.now(), id);
+        valueTransferRepository.insertValueTransfer(null, request.getResponsiblePersonId(), id, LocalDateTime.now());
         return getById(id);
     }
 
@@ -64,10 +75,9 @@ public class MaterialValueServiceImpl implements MaterialValueService {
         if (!materialValueRepository.existsMaterialValue(id)) {
             throw new ResourceNotFoundException("Material value with id " + id + " not found");
         }
-        validateResponsiblePersonExists(request.getResponsiblePersonId());
         materialValueRepository.updateMaterialValue(
                 id, request.getName(), request.getCategory(), request.getCost(),
-                request.getCondition(), request.getResponsiblePersonId());
+                request.getCondition());
         return getById(id);
     }
 
@@ -81,11 +91,8 @@ public class MaterialValueServiceImpl implements MaterialValueService {
         String category = request.getCategory() != null ? request.getCategory() : existing.getCategory();
         BigDecimal cost = request.getCost() != null ? request.getCost() : existing.getCost();
         String condition = request.getCondition() != null ? request.getCondition() : existing.getCondition();
-        Integer responsiblePersonId = request.getResponsiblePersonId() != null
-                ? request.getResponsiblePersonId() : existing.getResponsiblePersonId();
 
-        validateResponsiblePersonExists(responsiblePersonId);
-        materialValueRepository.updateMaterialValue(id, name, category, cost, condition, responsiblePersonId);
+        materialValueRepository.updateMaterialValue(id, name, category, cost, condition);
         return getById(id);
     }
 
@@ -94,12 +101,6 @@ public class MaterialValueServiceImpl implements MaterialValueService {
     public void delete(Integer id) {
         if (!materialValueRepository.existsMaterialValue(id)) {
             throw new ResourceNotFoundException("Material value with id " + id + " not found");
-        }
-        if (materialValueRepository.existsMovementsByMaterialValueId(id)) {
-            throw new ConflictException("Material value cannot be deleted because it has movements");
-        }
-        if (materialValueRepository.existsTransfersByMaterialValueId(id)) {
-            throw new ConflictException("Material value cannot be deleted because it has transfers");
         }
         materialValueRepository.deleteMaterialValue(id);
     }
@@ -129,6 +130,12 @@ public class MaterialValueServiceImpl implements MaterialValueService {
     private void validateResponsiblePersonExists(Integer responsiblePersonId) {
         if (responsiblePersonId != null && !responsiblePersonRepository.existsResponsiblePerson(responsiblePersonId)) {
             throw new ResourceNotFoundException("Responsible person with id " + responsiblePersonId + " not found");
+        }
+    }
+
+    private void validateResponsibleWarehouseExists(Integer warehouseId) {
+        if (warehouseId != null && !warehouseRepository.existsWarehouse(warehouseId)) {
+            throw new ResourceNotFoundException("Warehouse with id " + warehouseId + " not found");
         }
     }
 }
